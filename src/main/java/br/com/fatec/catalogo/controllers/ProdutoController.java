@@ -21,26 +21,11 @@ public class ProdutoController {
     @Autowired
     private ProdutoService service;
 
-    /*@GetMapping
-    public String listar(Model model){
-        model.addAttribute("produtos", service.listarTodos());
-        return "lista-produtos";
-    }*/
-
     @GetMapping("/novo")
     public String exibirFormulario(Model model){
         model.addAttribute("produto", new ProdutoModel());
         return "cadastro-produto";
     }
-
-    /*@PostMapping("/salvar")
-    public String salvar(@Valid @ModelAttribute("produto") ProdutoModel produto, BindingResult result){
-        if (result.hasErrors()){
-            return "cadastro-produto";
-        }
-        service.salvar(produto);
-        return "redirect:/produtos";
-    }*/
 
     @PostMapping("/salvar")
     public String salvar(@Valid @ModelAttribute("produto") ProdutoModel produto, BindingResult result, RedirectAttributes redirectAttributes){
