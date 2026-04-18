@@ -4,11 +4,6 @@ import br.com.fatec.catalogo.models.ProdutoModel;
 import br.com.fatec.catalogo.repositories.ProdutoRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,22 +50,5 @@ public class ProdutoService {
             return List.of();
         }
         return repository.findByNomeContainingIgnoreCase(nome);
-    }
-
-    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user = User.builder()
-                .username("aluno")
-                .password("{noop}12345")
-                .roles("USER")
-                .build();
-
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password("{noop}12345")
-                .roles("ADMIN","USER")
-                .build();
-
-        return new InMemoryUserDetailsManager(user, admin);
     }
 }

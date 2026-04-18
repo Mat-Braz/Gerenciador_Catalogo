@@ -9,7 +9,9 @@ Aplicação web para gerenciamento de catálogo de produtos, desenvolvida com Sp
 - **Java** (Spring Boot)
 - **Spring MVC** — arquitetura em camadas (Controller, Service, Repository, Model)
 - **Spring Data JPA** — persistência de dados
+- **Spring Security** - autenticação e controle de acesso
 - **Thymeleaf** — templates HTML server-side
+- **Thymeleaf Extras Spring Security 6** - integração de segurança nos templates 
 - **H2 Database** — banco de dados em memória
 - **Maven** — gerenciamento de dependências
 
@@ -29,6 +31,8 @@ catalogo/
 │       │   │   └── ProdutoModel.java
 │       │   ├── repositories/
 │       │   │   └── ProdutoRepository.java
+│       │   ├── security/
+│       │   │   └── SecurityConfig.java
 │       │   └── services/
 │       │       └── ProdutoService.java
 │       └── resources/
@@ -75,12 +79,30 @@ O console do H2 pode ser acessado em: [http://localhost:8080/h2-console](http://
 
 ---
 
+
+## 🔐 Autenticação
+
+A aplicação utiliza Spring Security com usuários em memória:
+
+| Usuário | Senha | Perfil      |
+|---------|-------|-------------|
+| aluno   | 12345 | USER        |
+| admin   | 12345 | ADMIN, USER |
+
+- Usuários com perfil **USER** podem apenas visualizar os produtos.
+- Usuários com perfil **ADMIN** têm acesso completo (cadastrar, editar e excluir).
+
+---
+
 ## 🖥️ Funcionalidades
 
 - Listagem de produtos
 - Cadastro de novo produto
 - Edição de produto existente
 - Remoção de produto
+- Autenticação com login e logout
+- Controle de acesso por perfil (USER e ADMIN)
+- Botão "Novo Produto" visível apenas para administradores
 
 ---
 
