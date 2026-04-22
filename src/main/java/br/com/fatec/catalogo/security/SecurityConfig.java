@@ -1,26 +1,26 @@
 package br.com.fatec.catalogo.security;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+public class SecurityConfig {
 
-public class SecurityConfig{
+    @Autowired
+    private UsuarioDetailsService usuarioDetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .userDetailsService(usuarioDetailsService)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login").permitAll()  // <- libera o login
-                        .requestMatchers("/produtos/novo", "/produtos/editar/**", "/produtos/excluir/**").hasRole("ADMIN")
+                        .requestMatchers("/login", "/h2-console/**").permitAll()
+                        .requestMatchers("/produtos/novo", "/produtos/editar/**", "/produtos/excluir/**", "/usuarios/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -28,25 +28,10 @@ public class SecurityConfig{
                         .defaultSuccessUrl("/produtos", true)
                         .permitAll()
                 )
-                .logout(logout -> logout.logoutSuccessUrl("/login"));
+                .logout(logout -> logout.logoutSuccessUrl("/login"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
 
         return http.build();
-    }
-
-    @Bean
-    public UserDetailsService users() {
-        UserDetails user = User.builder()
-                .username("aluno")
-                .password("{noop}12345")
-                .roles("USER")
-                .build();
-
-        UserDetails admin = User.builder()
-                .username("admin")
-                .password("{noop}12345")
-                .roles("ADMIN")
-                .build();
-
-        return new InMemoryUserDetailsManager(user, admin);
     }
 }

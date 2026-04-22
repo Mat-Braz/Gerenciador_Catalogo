@@ -22,14 +22,14 @@ public class ProdutoController {
     private ProdutoService service;
 
     @GetMapping("/novo")
-    public String exibirFormulario(Model model){
+    public String exibirFormulario(Model model) {
         model.addAttribute("produto", new ProdutoModel());
         return "cadastro-produto";
     }
 
     @PostMapping("/salvar")
-    public String salvar(@Valid @ModelAttribute("produto") ProdutoModel produto, BindingResult result, RedirectAttributes redirectAttributes){
-        if (result.hasErrors()){
+    public String salvar(@Valid @ModelAttribute("produto") ProdutoModel produto, BindingResult result, RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
             return "cadastro-produto";
         }
 
@@ -45,7 +45,7 @@ public class ProdutoController {
     }
 
     @GetMapping("/editar/{id}")
-    public String exibirEdicao(@PathVariable long id, Model model){
+    public String exibirEdicao(@PathVariable long id, Model model) {
         model.addAttribute("produto", service.buscarPorId(id));
         return "editar-produto";
     }
@@ -57,7 +57,7 @@ public class ProdutoController {
     }
 
     @GetMapping("/excluir/{id}")
-    public String excluir(@PathVariable long id){
+    public String excluir(@PathVariable long id) {
         service.excluir(id);
         return "redirect:/produtos";
     }

@@ -14,17 +14,17 @@ public class ProdutoService {
     @Autowired
     private ProdutoRepository repository;
 
-    public List<ProdutoModel> listarTodos(){
+    public List<ProdutoModel> listarTodos() {
         return repository.findAll();
     }
 
-    public ProdutoModel buscarPorId(long id){
+    public ProdutoModel buscarPorId(long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado: " + id));
     }
 
     @Transactional
-    public boolean salvar(ProdutoModel produto){
+    public boolean salvar(ProdutoModel produto) {
         if (repository.existsByNomeIgnoreCase(produto.getNome())) {
             return false;
         }
@@ -33,7 +33,7 @@ public class ProdutoService {
     }
 
     @Transactional
-    public void excluir(long id){
+    public void excluir(long id) {
         repository.deleteById(id);
     }
 

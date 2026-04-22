@@ -150,11 +150,13 @@
             <h2>Novo produto</h2>
         </div>
         <div class="card-body">
-            <div th:if="${erro}" style="background-color:#f8d7da; color:#842029; border:1px solid #f5c2c7; padding:12px 16px; border-radius:6px; margin-bottom:16px;">
+            <div th:if="${erro}"
+                 style="background-color:#f8d7da; color:#842029; border:1px solid #f5c2c7; padding:12px 16px; border-radius:6px; margin-bottom:16px;">
                 <span th:text="${erro}"></span>
             </div>
 
-            <div th:if="${sucesso}" style="background-color:#d1e7dd; color:#0f5132; border:1px solid #badbcc; padding:12px 16px; border-radius:6px; margin-bottom:16px;">
+            <div th:if="${sucesso}"
+                 style="background-color:#d1e7dd; color:#0f5132; border:1px solid #badbcc; padding:12px 16px; border-radius:6px; margin-bottom:16px;">
                 <span th:text="${sucesso}"></span>
             </div>
             <form th:action="@{/produtos/salvar}" method="post">
