@@ -19,7 +19,7 @@ public class SecurityConfig {
         http
                 .userDetailsService(usuarioDetailsService)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/h2-console/**").permitAll()
+                        .requestMatchers("/login").permitAll()
                         .requestMatchers("/produtos/novo", "/produtos/editar/**", "/produtos/excluir/**", "/usuarios/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -28,9 +28,7 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/produtos", true)
                         .permitAll()
                 )
-                .logout(logout -> logout.logoutSuccessUrl("/login"))
-                .csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"))
-                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()));
+                .logout(logout -> logout.logoutSuccessUrl("/login"));
 
         return http.build();
     }
