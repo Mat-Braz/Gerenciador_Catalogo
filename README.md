@@ -27,20 +27,26 @@ catalogo/
 │       │   ├── CatalogoApplication.java
 │       │   ├── controllers/
 │       │   │   ├── AuthController.java
-│       │   │   └── ProdutoController.java
+│       │   │   ├── ProdutoController.java
+│       │   │   └── UsuarioController.java
 │       │   ├── models/
-│       │   │   └── ProdutoModel.java
+│       │   │   ├── ProdutoModel.java
+│       │   │   └── UsuarioModel.java
 │       │   ├── repositories/
-│       │   │   └── ProdutoRepository.java
+│       │   │   ├── ProdutoRepository.java
+│       │   │   └── UsuarioRepository.java
 │       │   ├── security/
-│       │   │   └── SecurityConfig.java
+│       │   │   ├── SecurityConfig.java
+│       │   │   └── UsuarioDetailsService.java
 │       │   └── services/
-│       │       └── ProdutoService.java
+│       │       ├── ProdutoService.java
+│       │       └── UsuarioService.java
 │       └── resources/
 │           ├── templates/
 │           │   ├── login.html
 │           │   ├── lista-produtos.html
 │           │   ├── cadastro-produto.html
+│           │   ├── cadastro-usuario.html
 │           │   └── editar-produto.html
 │           ├── application.properties
 │           └── import.sql
@@ -75,7 +81,7 @@ A aplicação estará disponível em: [http://localhost:8080](http://localhost:8
 
 ## 🗄️ Banco de dados
 
-O projeto utiliza **H2** (banco em memória). Os dados iniciais são carregados automaticamente via `import.sql` ao iniciar a aplicação.
+O projeto utiliza **H2** com persistência em arquivo. Os dados são mantidos entre sessões e o usuário admin inicial é carregado via `import.sql`.
 
 O console do H2 pode ser acessado em: [http://localhost:8080/h2-console](http://localhost:8080/h2-console)
 
@@ -83,15 +89,15 @@ O console do H2 pode ser acessado em: [http://localhost:8080/h2-console](http://
 
 ## 🔐 Autenticação
 
-A aplicação utiliza Spring Security com usuários em memória:
+A aplicação utiliza Spring Security com autenticação via banco de dados. Os usuários são gerenciados pelo próprio sistema.
 
-| Usuário | Senha | Perfil      |
-|---------|-------|-------------|
-| aluno   | 12345 | USER        |
-| admin   | 12345 | ADMIN, USER |
+| Perfil | Permissões |
+|--------|------------|
+| USER   | Visualizar produtos |
+| ADMIN  | Visualizar, cadastrar, editar e excluir produtos + cadastrar usuários |
 
 - Usuários com perfil **USER** podem apenas visualizar os produtos.
-- Usuários com perfil **ADMIN** têm acesso completo (cadastrar, editar e excluir).
+- Usuários com perfil **ADMIN** têm acesso completo ao sistema.
 
 ---
 
@@ -102,8 +108,10 @@ A aplicação utiliza Spring Security com usuários em memória:
 - Edição de produto existente
 - Remoção de produto
 - Autenticação com login e logout
+- Visualização de senha na tela de login e cadastro
 - Controle de acesso por perfil (USER e ADMIN)
 - Botão "Novo Produto" visível apenas para administradores
+- Cadastro de usuários pelo ADMIN com definição de perfil
 - Tela de login personalizada com Bootstrap
 
 ---
