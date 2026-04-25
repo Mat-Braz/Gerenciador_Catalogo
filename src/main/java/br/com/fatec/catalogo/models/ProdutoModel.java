@@ -27,6 +27,11 @@ public class ProdutoModel implements Serializable {
     @Positive(message = "O valor deve ser um número positivo.")
     private BigDecimal valor;
 
+    @NotNull(message = "A categoria é obrigatória.")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "id_categoria", nullable = false)
+    private CategoriaModel categoria;
+
     @Column(updatable = false)
     private LocalDateTime dataCadastro;
     private LocalDateTime dataAtualizacao;
@@ -84,5 +89,13 @@ public class ProdutoModel implements Serializable {
 
     public void setDataAtualizacao(LocalDateTime dataAtualizacao) {
         this.dataAtualizacao = dataAtualizacao;
+    }
+
+    public CategoriaModel getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(CategoriaModel categoria) {
+        this.categoria = categoria;
     }
 }
