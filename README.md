@@ -1,6 +1,6 @@
 # 📦 Catálogo de Produtos — Spring Boot
 
-Aplicação web para gerenciamento de catálogo de produtos, desenvolvida com Spring Boot, Thymeleaf e banco de dados H2. Projeto acadêmico desenvolvido na **FATEC**.
+Aplicação web para gerenciamento de catálogo de produtos, desenvolvida com Spring Boot, Thymeleaf e PostgreSQL. Projeto acadêmico desenvolvido na **FATEC**.
 
 ---
 
@@ -9,10 +9,11 @@ Aplicação web para gerenciamento de catálogo de produtos, desenvolvida com Sp
 - **Java** (Spring Boot)
 - **Spring MVC** — arquitetura em camadas (Controller, Service, Repository, Model)
 - **Spring Data JPA** — persistência de dados
-- **Spring Security** - autenticação e controle de acesso
+- **Spring Security** — autenticação e controle de acesso
 - **Thymeleaf** — templates HTML server-side
-- **Thymeleaf Extras Spring Security 6** - integração de segurança nos templates
+- **Thymeleaf Extras Spring Security 6** — integração de segurança nos templates
 - **PostgreSQL** — banco de dados
+- **Docker** — containerização do banco
 - **Maven** — gerenciamento de dependências
 
 ---
@@ -28,13 +29,16 @@ catalogo/
 │       │   ├── controllers/
 │       │   │   ├── AuthController.java
 │       │   │   ├── ProdutoController.java
-│       │   │   └── UsuarioController.java
+│       │   │   ├── UsuarioController.java
+│       │   │   └── CategoriaController.java
 │       │   ├── models/
 │       │   │   ├── ProdutoModel.java
-│       │   │   └── UsuarioModel.java
+│       │   │   ├── UsuarioModel.java
+│       │   │   └── CategoriaModel.java
 │       │   ├── repositories/
 │       │   │   ├── ProdutoRepository.java
-│       │   │   └── UsuarioRepository.java
+│       │   │   ├── UsuarioRepository.java
+│       │   │   └── CategoriaRepository.java
 │       │   ├── security/
 │       │   │   ├── SecurityConfig.java
 │       │   │   └── UsuarioDetailsService.java
@@ -47,7 +51,8 @@ catalogo/
 │           │   ├── lista-produtos.html
 │           │   ├── cadastro-produto.html
 │           │   ├── cadastro-usuario.html
-│           │   └── editar-produto.html
+│           │   ├── editar-produto.html
+│           │   └── cadastro-categoria.html
 │           ├── application.properties
 │           └── import.sql
 └── pom.xml
@@ -61,6 +66,7 @@ catalogo/
 
 - Java 17+
 - Maven 3.8+
+- Docker
 
 ### Passos
 
@@ -71,49 +77,104 @@ git clone https://github.com/Mat-Braz/Gerenciador_Catalogo.git
 # Acesse a pasta do projeto
 cd Gerenciador_Catalogo/catalogo
 
+# Inicie o banco (Docker)
+docker start catalogo_db
+
 # Execute a aplicação
 ./mvnw spring-boot:run
 ~~~
 
-A aplicação estará disponível em: [http://localhost:8080](http://localhost:8080)
+A aplicação estará disponível em:  
+👉 http://localhost:8080
 
 ---
 
 ## 🗄️ Banco de dados
 
-O projeto utiliza PostgreSQL rodando via Docker. Os dados são persistidos no container e mantidos entre sessões. 
-- Para iniciar o banco antes de rodar a aplicação, execute docker start catalogo_db no PowerShell;
-- O usuário admin inicial deve ser inserido manualmente com o comando docker exec -it catalogo_db psql -U postgres -c "INSERT INTO TB_USUARIO (username, password, role) VALUES ('admin', '{noop}123456', 'ADMIN');";
-- Para visualizar os registros, acesse pelo IntelliJ na aba Database ou via terminal com docker exec -it catalogo_db psql -U postgres.
+O projeto utiliza PostgreSQL rodando via Docker.
+
+### 🔹 Configuração
+- Banco: `catalogo`
+- Porta: `5432`
+- Usuário: `postgres`
+
+### 🔹 Inicialização
+
+~~~bash
+docker start catalogo_db
+~~~
+
+### 🔹 Inserir usuário admin
+
+~~~bash
+docker exec -it catalogo_db psql -U postgres -c "INSERT INTO tb_usuario (username, password, role) VALUES ('admin', '{noop}123456', 'ADMIN');"
+~~~
+
+### 🔹 Acessar banco
+
+~~~bash
+docker exec -it catalogo_db psql -U postgres
+~~~
 
 ---
 
-## 🔐 Autenticação
+## 🧩 Relacionamento Produto x Categoria
 
-A aplicação utiliza Spring Security com autenticação via banco de dados. Os usuários são gerenciados pelo próprio sistema.
+- Um produto pertence a uma categoria
+- Implementado com `@ManyToOne`
 
-| Perfil | Permissões |
-|--------|------------|
-| USER   | Visualizar produtos |
-| ADMIN  | Visualizar, cadastrar, editar e excluir produtos + cadastrar usuários |
+~~~java
+@ManyToOne(optional = false)
+@JoinColumn(name = "id_categoria", nullable = false)
+private CategoriaModel categoria;
+~~~
 
-- Usuários com perfil **USER** podem apenas visualizar os produtos.
-- Usuários com perfil **ADMIN** têm acesso completo ao sistema.
+### 🔹 Impacto
+- Todo produto deve possuir uma categoria
+- Integridade referencial garantida no banco
+- Uso de chave estrangeira (`id_categoria`)
 
 ---
 
 ## 🖥️ Funcionalidades
 
+### 📦 Produtos
 - Listagem de produtos
 - Cadastro de novo produto
 - Edição de produto existente
 - Remoção de produto
-- Autenticação com login e logout
-- Visualização de senha na tela de login e cadastro
-- Controle de acesso por perfil (USER e ADMIN)
-- Botão "Novo Produto" visível apenas para administradores
-- Cadastro de usuários pelo ADMIN com definição de perfil
-- Tela de login personalizada com Bootstrap
+
+### 🗂️ Categorias
+- Cadastro de categorias
+- Validação de nome (mínimo 2 caracteres)
+- Integração com produtos
+
+### 👤 Usuários
+- Cadastro de usuários
+- Definição de perfil (USER / ADMIN)
+
+### 🔐 Segurança
+- Login e logout
+- Controle de acesso por perfil
+- Restrição de ações administrativas
+
+---
+
+## 🔐 Autenticação
+
+| Perfil | Permissões |
+|--------|------------|
+| USER   | Visualizar produtos |
+| ADMIN  | Gerenciar produtos, categorias e usuários |
+
+---
+
+## 🧪 Observações
+
+- O banco deve estar ativo antes de iniciar o sistema
+- O usuário admin deve existir para acesso inicial
+- Em caso de erro de estrutura, recriar o banco `catalogo`
+- Utilizar `spring.jpa.hibernate.ddl-auto=update` durante o desenvolvimento
 
 ---
 
