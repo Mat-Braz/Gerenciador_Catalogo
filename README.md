@@ -21,41 +21,45 @@ Aplicação web para gerenciamento de catálogo de produtos, desenvolvida com Sp
 ## 📁 Estrutura do Projeto
 
 ~~~
-catalogo/
-├── src/
-│   └── main/
-│       ├── java/br/com/fatec/catalogo/
-│       │   ├── CatalogoApplication.java
-│       │   ├── controllers/
-│       │   │   ├── AuthController.java
-│       │   │   ├── ProdutoController.java
-│       │   │   ├── UsuarioController.java
-│       │   │   └── CategoriaController.java
-│       │   ├── models/
-│       │   │   ├── ProdutoModel.java
-│       │   │   ├── UsuarioModel.java
-│       │   │   └── CategoriaModel.java
-│       │   ├── repositories/
-│       │   │   ├── ProdutoRepository.java
-│       │   │   ├── UsuarioRepository.java
-│       │   │   └── CategoriaRepository.java
-│       │   ├── security/
-│       │   │   ├── SecurityConfig.java
-│       │   │   └── UsuarioDetailsService.java
-│       │   └── services/
-│       │       ├── ProdutoService.java
-│       │       └── UsuarioService.java
-│       └── resources/
-│           ├── templates/
-│           │   ├── login.html
-│           │   ├── lista-produtos.html
-│           │   ├── cadastro-produto.html
-│           │   ├── cadastro-usuario.html
-│           │   ├── editar-produto.html
-│           │   └── cadastro-categoria.html
-│           ├── application.properties
-│           └── import.sql
-└── pom.xml
+CatalogoSpring/
+└── catalogo/
+    ├── data/
+    ├── src/
+    │   └── main/
+    │       ├── java/br/com/fatec/catalogo/
+    │       │   ├── controllers/
+    │       │   │   ├── AuthController.java
+    │       │   │   ├── CategoriaController.java
+    │       │   │   ├── ProdutoController.java
+    │       │   │   └── UsuarioController.java
+    │       │   ├── models/
+    │       │   │   ├── CategoriaModel.java
+    │       │   │   ├── ProdutoModel.java
+    │       │   │   └── UsuarioModel.java
+    │       │   ├── repositories/
+    │       │   │   ├── CategoriaRepository.java
+    │       │   │   ├── ProdutoRepository.java
+    │       │   │   └── UsuarioRepository.java
+    │       │   ├── security/
+    │       │   │   ├── SecurityConfig.java
+    │       │   │   └── UsuarioDetailsService.java
+    │       │   ├── services/
+    │       │   │   ├── CategoriaService.java
+    │       │   │   ├── ProdutoService.java
+    │       │   │   └── UsuarioService.java
+    │       │   └── CatalogoApplication.java
+    │       └── resources/
+    │           ├── static/
+    │           ├── templates/
+    │           │   ├── cadastrar-categoria.html
+    │           │   ├── cadastro-produto.html
+    │           │   ├── cadastro-usuario.html
+    │           │   ├── editar-produto.html
+    │           │   ├── lista-produtos.html
+    │           │   └── login.html
+    │           ├── application.properties
+    │           └── import.sql
+    └── test/
 ~~~
 
 ---
@@ -118,12 +122,19 @@ docker exec -it catalogo_db psql -U postgres
 
 ---
 
-## 🧩 Relacionamento Produto x Categoria
+## 🧩 Relacionamento Categoria x Produto
 
-- Um produto pertence a uma categoria
-- Implementado com `@ManyToOne`
+- Uma categoria pode conter múltiplos produtos (`@OneToMany`)
+- Um produto pertence a uma única categoria (`@ManyToOne`)
 
 ~~~java
+// CategoriaModel.java
+@OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+private List<ProdutoModel> produtos;
+~~~
+
+~~~java
+// ProdutoModel.java
 @ManyToOne(optional = false)
 @JoinColumn(name = "id_categoria", nullable = false)
 private CategoriaModel categoria;
@@ -131,8 +142,9 @@ private CategoriaModel categoria;
 
 ### 🔹 Impacto
 - Todo produto deve possuir uma categoria
-- Integridade referencial garantida no banco
-- Uso de chave estrangeira (`id_categoria`)
+- Uma categoria agrupa e organiza múltiplos produtos
+- Integridade referencial garantida no banco via chave estrangeira (`id_categoria`)
+- Remoção em cascata configurável via `CascadeType`
 
 ---
 
@@ -143,11 +155,12 @@ private CategoriaModel categoria;
 - Cadastro de novo produto
 - Edição de produto existente
 - Remoção de produto
+- **Busca por categoria** — filtra produtos pela categoria selecionada
 
 ### 🗂️ Categorias
-- Cadastro de categorias
-- Validação de nome (mínimo 2 caracteres)
-- Integração com produtos
+- **Cadastro de categorias** — formulário com validação de nome (mínimo 2 caracteres)
+- Listagem de todas as categorias
+- Integração bidirecional com produtos via `@OneToMany`
 
 ### 👤 Usuários
 - Cadastro de usuários
@@ -160,11 +173,51 @@ private CategoriaModel categoria;
 
 ---
 
+## 🔍 Busca por Categoria
+
+A busca por categoria permite filtrar os produtos exibidos na listagem de acordo com a categoria selecionada.
+
+### 🔹 Como funciona
+
+Na tela de listagem de produtos, o usuário seleciona uma categoria no filtro disponível. A aplicação retorna apenas os produtos vinculados àquela categoria.
+
+### 🔹 Implementação no Repository
+
+~~~java
+// ProdutoRepository.java
+List<ProdutoModel> findByCategoria_IdCategoria(Long idCategoria);
+
+// Ou por nome da categoria
+List<ProdutoModel> findByCategoria_NomeContainingIgnoreCase(String nome);
+~~~
+
+### 🔹 Implementação no Controller
+
+~~~java
+// ProdutoController.java
+@GetMapping("/produtos")
+public String listar(
+    @RequestParam(required = false) Long categoriaId,
+    Model model
+) {
+    List<ProdutoModel> produtos = (categoriaId != null)
+        ? produtoService.buscarPorCategoria(categoriaId)
+        : produtoService.listarTodos();
+
+    model.addAttribute("produtos", produtos);
+    model.addAttribute("categorias", categoriaService.listarTodas());
+    model.addAttribute("categoriaSelecionada", categoriaId);
+    return "lista-produtos";
+}
+~~~
+
+---
+
 ## 🔐 Autenticação
 
 | Perfil | Permissões |
 |--------|------------|
-| USER   | Visualizar produtos |
+| USER   | Visualizar e buscar produtos por categoria |
 | ADMIN  | Gerenciar produtos, categorias e usuários |
 
 ---
@@ -175,6 +228,7 @@ private CategoriaModel categoria;
 - O usuário admin deve existir para acesso inicial
 - Em caso de erro de estrutura, recriar o banco `catalogo`
 - Utilizar `spring.jpa.hibernate.ddl-auto=update` durante o desenvolvimento
+- Ao recriar o banco, **cadastrar as categorias antes de inserir produtos**
 
 ---
 
