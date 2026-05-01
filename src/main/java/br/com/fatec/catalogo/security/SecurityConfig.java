@@ -20,7 +20,7 @@ public class SecurityConfig {
                 .userDetailsService(usuarioDetailsService)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login").permitAll()
-                        .requestMatchers("/produtos/novo", "/produtos/editar/**", "/produtos/excluir/**", "/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers("/produtos/novo", "/produtos/editar/**", "/produtos/excluir/**", "/usuarios/**", "/categorias/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
